@@ -1,2 +1,3 @@
 .vercel
 echo "node_modules/" >> .gitignore
+.next
