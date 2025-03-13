@@ -6,7 +6,7 @@ import os
 
 app = Flask(__name__)
 # 更新 CORS 配置，允许来自 Vercel 部署的请求
-CORS(app, resources={r"/api/*": {"origins": ["http://localhost:3000", "http://localhost:3001", "https://jaxsonai.com", "https://jax-blog-9fz3u6tfw-jaxsonwangs-projects-d78c9422.vercel.app"]}})
+CORS(app, resources={r"/api/*": {"origins": ["http://localhost:3000", "http://localhost:3001", "https://jaxsonai.com", "https://jax-blog-9fz3u6tfw-jaxsonwangs-projects-d78c9422.vercel.app"], "methods": ["GET", "POST"]}})
 
 # 加载环境变量
 load_dotenv()
@@ -88,3 +88,35 @@ def get_post(post_id):
         'content': post.content,
         'created_at': post.created_at.isoformat() if post.created_at else None
     }
+
+# 添加新的API端点用于创建新文章
+@app.route('/api/posts', methods=['POST'])
+def create_post():
+    from flask import request, jsonify
+    import datetime
+    
+    data = request.get_json()
+    
+    # 验证请求数据
+    if not data or not 'title' in data or not 'content' in data:
+        return jsonify({'error': '标题和内容不能为空'}), 400
+    
+    # 创建新文章
+    new_post = Post(
+        title=data['title'],
+        content=data['content'],
+        created_at=datetime.datetime.now()
+    )
+    
+    # 保存到数据库
+    db.session.add(new_post)
+    db.session.commit()
+    
+    # 返回新创建的文章信息
+    return jsonify({
+        'id': new_post.id,
+        'title': new_post.title,
+        'content': new_post.content,
+        'created_at': new_post.created_at.isoformat() if new_post.created_at else None,
+        'message': '文章创建成功！'
+    }), 201
