@@ -37,6 +37,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [showAdmin, setShowAdmin] = useState(false); // 控制管理链接的可见性
+  const [clickCount, setClickCount] = useState(0);
 
   // 检查系统主题偏好和本地存储的偏好
   useEffect(() => {
@@ -227,7 +229,31 @@ export default function Home() {
             <Link href="/about" className="hover:text-gray-700 dark:hover:text-gray-300">
               关于
             </Link>
+            {/* 点击版权信息5次后显示管理链接 */}
+            {showAdmin && (
+              <Link href="/admin" className="hover:text-gray-700 dark:hover:text-gray-300 text-blue-500">
+                管理
+              </Link>
+            )}
           </div>
+          {/* 点击版权信息5次后显示管理链接 */}
+          <p 
+            onClick={() => {
+              setClickCount(clickCount + 1);
+              if (clickCount >= 4) {
+                setShowAdmin(true);
+              }
+            }} 
+            className="cursor-pointer"
+          >
+            最后更新: {lastUpdated.toLocaleString('zh-CN', { 
+              year: 'numeric', 
+              month: '2-digit', 
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </p>
         </div>
       </footer>
     </div>
