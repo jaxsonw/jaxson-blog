@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 // Flask 后端 API URL
-const FLASK_API_URL = process.env.NEXT_PUBLIC_FLASK_API_URL || 'http://localhost:5000';
+const FLASK_API_URL = process.env.NEXT_PUBLIC_FLASK_API_URL || 'http://localhost:5001';
 
 // 备用模拟数据，仅在无法连接到 Flask 后端时使用
 const mockPosts = [
@@ -33,21 +33,20 @@ export async function GET() {
       headers: {
         'Content-Type': 'application/json',
       },
-      // 设置较短的超时时间，以便在 Flask 不可用时快速回退到模拟数据
+      // 增加超时时间，给后端更多响应时间
       signal: AbortSignal.timeout(5000), // 5 秒超时
     });
     
     if (!response.ok) {
-      throw new Error(`Flask API responded with status: ${response.status}`);
+      console.log(`无法从后端获取数据: ${response.status}`);
+      return NextResponse.json({ posts: mockPosts }, { status: 200 });
     }
     
     const data = await response.json();
     return NextResponse.json(data, { status: 200 });
   } catch (error) {
-    console.error('Error fetching posts from Flask backend:', error);
-    console.log('Falling back to mock data');
-    
-    // 如果无法从 Flask 获取数据，使用模拟数据
+    console.error('获取文章列表失败:', error);
+    // 使用模拟数据作为后备
     return NextResponse.json({ posts: mockPosts }, { status: 200 });
   }
 }

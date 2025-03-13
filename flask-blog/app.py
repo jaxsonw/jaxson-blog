@@ -5,25 +5,17 @@ from dotenv import load_dotenv
 import os
 
 app = Flask(__name__)
-# 更新 CORS 配置，允许来自 Vercel 部署的请求
+# 更新 CORS 配置，允许来自本地开发环境和前端部署的请求
 CORS(app, resources={r"/api/*": {"origins": [
     "http://localhost:3000", 
-    "http://localhost:3001", 
-    "https://jaxsonai.com", 
-    "https://jax-blog-9fz3u6tfw-jaxsonwangs-projects-d78c9422.vercel.app",
-    "https://jax-blog-lrfyw1zj7-jaxsonwangs-projects-d78c9422.vercel.app",
-    "https://jax-blog-e0a7r9xf5-jaxsonwangs-projects-d78c9422.vercel.app",
-    "https://jax-blog-hovvf0jar-jaxsonwangs-projects-d78c9422.vercel.app",
-    "https://jax-blog.vercel.app"
-], "methods": ["GET", "POST"]}})
+    "http://localhost:3001",
+    "https://jaxson-blog.vercel.app"
+], "methods": ["GET"]}})
 
 # 加载环境变量
 load_dotenv()
-# 在生产环境中使用环境变量中的数据库 URL，否则使用默认的 SQLite 数据库
+# 使用环境变量中的数据库 URL，否则使用默认的 SQLite 数据库
 database_url = os.getenv('DATABASE_URL', 'sqlite:///blog.db')
-# 处理 Heroku 的 PostgreSQL URL 格式
-if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default-secret-key')
@@ -71,7 +63,7 @@ with app.app_context():
 
 @app.route('/')
 def home():
-    return "Flask with myblogdb is running!"
+    return "Flask Blog API is running!"
 
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
@@ -83,11 +75,6 @@ def get_posts():
         'created_at': p.created_at.isoformat() if p.created_at else None
     } for p in posts]}
 
-if __name__ == '__main__':
-    # 在本地开发环境中使用指定端口，在生产环境中使用环境变量中的端口
-    port = int(os.getenv('PORT', 5001))
-    app.run(host='0.0.0.0', port=port, debug=False)
-
 @app.route('/api/posts/<int:post_id>', methods=['GET'])
 def get_post(post_id):
     post = Post.query.get_or_404(post_id)
@@ -98,34 +85,7 @@ def get_post(post_id):
         'created_at': post.created_at.isoformat() if post.created_at else None
     }
 
-# 添加新的API端点用于创建新文章
-@app.route('/api/posts', methods=['POST'])
-def create_post():
-    from flask import request, jsonify
-    import datetime
-    
-    data = request.get_json()
-    
-    # 验证请求数据
-    if not data or not 'title' in data or not 'content' in data:
-        return jsonify({'error': '标题和内容不能为空'}), 400
-    
-    # 创建新文章
-    new_post = Post(
-        title=data['title'],
-        content=data['content'],
-        created_at=datetime.datetime.now()
-    )
-    
-    # 保存到数据库
-    db.session.add(new_post)
-    db.session.commit()
-    
-    # 返回新创建的文章信息
-    return jsonify({
-        'id': new_post.id,
-        'title': new_post.title,
-        'content': new_post.content,
-        'created_at': new_post.created_at.isoformat() if new_post.created_at else None,
-        'message': '文章创建成功！'
-    }), 201
+if __name__ == '__main__':
+    # 使用指定端口
+    port = int(os.getenv('PORT', 5001))
+    app.run(host='0.0.0.0', port=port, debug=True)
