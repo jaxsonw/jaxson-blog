@@ -6,7 +6,16 @@ import os
 
 app = Flask(__name__)
 # 更新 CORS 配置，允许来自 Vercel 部署的请求
-CORS(app, resources={r"/api/*": {"origins": ["http://localhost:3000", "http://localhost:3001", "https://jaxsonai.com", "https://jax-blog-9fz3u6tfw-jaxsonwangs-projects-d78c9422.vercel.app"], "methods": ["GET", "POST"]}})
+CORS(app, resources={r"/api/*": {"origins": [
+    "http://localhost:3000", 
+    "http://localhost:3001", 
+    "https://jaxsonai.com", 
+    "https://jax-blog-9fz3u6tfw-jaxsonwangs-projects-d78c9422.vercel.app",
+    "https://jax-blog-lrfyw1zj7-jaxsonwangs-projects-d78c9422.vercel.app",
+    "https://jax-blog-e0a7r9xf5-jaxsonwangs-projects-d78c9422.vercel.app",
+    "https://jax-blog-hovvf0jar-jaxsonwangs-projects-d78c9422.vercel.app",
+    "https://jax-blog.vercel.app"
+], "methods": ["GET", "POST"]}})
 
 # 加载环境变量
 load_dotenv()
