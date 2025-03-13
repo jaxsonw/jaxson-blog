@@ -13,7 +13,7 @@ export default function AdminPage() {
   const router = useRouter();
 
   // 获取API URL
-  const apiUrl = process.env.NEXT_PUBLIC_FLASK_API_URL || 'http://localhost:5001';
+  const apiUrl = 'https://jaxson-blog-api.onrender.com';
   console.log('Using API URL:', apiUrl);
 
   const handleSubmit = async (e: React.FormEvent) => {
