@@ -116,31 +116,9 @@ const categoryColors: Record<string, string> = {
 export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const [clickCount, setClickCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
-  // 检查系统主题偏好和本地存储的偏好
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // 首先检查localStorage中是否有保存的主题偏好
-      const savedTheme = localStorage.getItem('theme');
-      
-      if (savedTheme) {
-        // 如果有保存的主题偏好，使用它
-        const isDark = savedTheme === 'dark';
-        setDarkMode(isDark);
-        document.documentElement.classList.toggle('dark', isDark);
-      } else {
-        // 如果没有保存的主题偏好，检查系统偏好
-        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        setDarkMode(isDark);
-        document.documentElement.classList.toggle('dark', isDark);
-      }
-    }
-  }, []);
 
   // 获取文章数据的函数
   const fetchPosts = () => {
@@ -251,24 +229,77 @@ export default function Home() {
     return matchesSearch && matchesCategory;
   });
 
+  // 获取精选文章（最新的3篇）
+  const featuredPosts = [...filteredPosts].sort((a, b) => {
+    const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return dateB - dateA;
+  }).slice(0, 3);
+
+  // 获取其余文章
+  const remainingPosts = [...filteredPosts].sort((a, b) => {
+    const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return dateB - dateA;
+  }).slice(3);
+
   return (
-    <div>
-      {/* 页面标题和介绍 */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 py-8 px-4 rounded-lg mb-6">
-        <h1 className="text-3xl font-bold text-center text-blue-600 dark:text-blue-400 mb-2">最新文章</h1>
-        <p className="text-center text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-          探索我的技术见解和编程心得，从前端开发到全栈技术，这里有你想要的知识分享。
-        </p>
-        
-        {/* 搜索栏 */}
-        <div className="max-w-md mx-auto mt-6">
-          <div className="relative">
+    <div className="container mx-auto px-4 py-8">
+      {/* 英雄区域 */}
+      <section className="relative overflow-hidden rounded-lg mb-16">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-900 dark:to-indigo-900 rounded-lg">
+          <div className="container mx-auto px-6 py-16 md:py-24 relative z-10">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 max-w-2xl">
+              探索编程世界，分享技术见解
+            </h1>
+            <p className="text-lg md:text-xl text-blue-100 mb-8 max-w-xl">
+              从前端到后端，从基础概念到高级技巧，这里记录我的编程旅程和技术思考。
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link 
+                href="#latest-posts" 
+                className="bg-white text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-lg font-medium transition-colors inline-flex items-center justify-center"
+              >
+                浏览文章
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </Link>
+              <Link 
+                href="/about" 
+                className="bg-transparent text-white border border-white hover:bg-white/10 px-6 py-3 rounded-lg font-medium transition-colors inline-flex items-center justify-center"
+              >
+                关于我
+              </Link>
+            </div>
+          </div>
+          
+          {/* 装饰元素 */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-400 rounded-full opacity-20 blur-3xl"></div>
+            <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-400 rounded-full opacity-20 blur-3xl"></div>
+          </div>
+        </div>
+      </section>
+
+      {/* 搜索和分类筛选 */}
+      <section className="mb-12" id="latest-posts">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">最新文章</h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
+              探索我的技术见解和编程心得
+            </p>
+          </div>
+          
+          {/* 搜索栏 */}
+          <div className="relative w-full md:w-64">
             <input
               type="text"
               placeholder="搜索文章..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
             />
             <button 
               onClick={() => setSearchTerm('')}
@@ -278,12 +309,9 @@ export default function Home() {
             </button>
           </div>
         </div>
-      </div>
-
-      {/* 分类过滤器 */}
-      <div className="mb-6 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-        <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">按分类筛选</h2>
-        <div className="flex flex-wrap items-center gap-2">
+        
+        {/* 分类过滤器 */}
+        <div className="flex flex-wrap items-center gap-2 mb-8">
           <button
             onClick={() => setSelectedCategory(null)}
             className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
@@ -308,29 +336,31 @@ export default function Home() {
             </button>
           ))}
         </div>
-      </div>
-
-      {/* 刷新按钮 */}
-      <div className="flex justify-end mb-4">
-        <button
-          onClick={fetchPosts}
-          className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800/30 transition-colors"
-        >
-          <span>刷新文章</span>
-          <span>🔄</span>
-        </button>
-      </div>
+      </section>
 
       {loading ? (
-        <div className="space-y-6 animate-pulse">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-48 bg-gray-200 dark:bg-gray-700 rounded-lg" />
-          ))}
+        <div className="space-y-8">
+          {/* 骨架屏加载状态 */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4"></div>
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : (
         <div>
           {filteredPosts.length === 0 ? (
-            <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow">
+            <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-lg shadow">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
               <p className="text-xl text-gray-500 dark:text-gray-400">
                 {searchTerm ? '没有找到匹配的文章' : '暂无文章，敬请期待。'}
               </p>
@@ -340,57 +370,113 @@ export default function Home() {
                     setSearchTerm('');
                     setSelectedCategory(null);
                   }}
-                  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                  className="mt-6 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
                 >
                   清除搜索
                 </button>
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {filteredPosts.map((post) => (
-                <article key={post.id} className="group bg-white dark:bg-gray-800 rounded-xl shadow hover:shadow-md transition overflow-hidden flex flex-col h-full">
-                  {/* 特色图片 */}
-                  <div className="relative h-48 w-full overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 opacity-80"></div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <h2 className="text-white text-2xl font-bold px-6 text-center">{post.title}</h2>
-                    </div>
+            <>
+              {/* 精选文章 */}
+              {featuredPosts.length > 0 && (
+                <section className="mb-16">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {featuredPosts.map((post, index) => (
+                      <article 
+                        key={post.id} 
+                        className={`group relative overflow-hidden rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex flex-col h-full ${
+                          index === 0 ? 'md:col-span-3 lg:col-span-2' : ''
+                        }`}
+                      >
+                        <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600">
+                          <div className="absolute inset-0 bg-black opacity-30 group-hover:opacity-20 transition-opacity"></div>
+                          <div className="absolute inset-0 flex flex-col justify-end p-6">
+                            {post.category && (
+                              <span className={`text-xs px-2 py-1 rounded-full mb-3 inline-block w-fit ${categoryColors[post.category] || categoryColors['其他']}`}>
+                                {post.category}
+                              </span>
+                            )}
+                            <h3 className="text-xl font-bold text-white mb-2 group-hover:translate-y-[-5px] transition-transform">
+                              {post.title}
+                            </h3>
+                            <time className="text-sm text-white/80">
+                              {formatDate(post.created_at)}
+                            </time>
+                          </div>
+                        </div>
+                        
+                        <div className="p-6 bg-white dark:bg-gray-800 flex-grow flex flex-col">
+                          <p className="text-gray-700 dark:text-gray-300 line-clamp-3 mb-4 flex-grow">
+                            {post.content}
+                          </p>
+                          
+                          <Link
+                            href={`/blog/${post.id}`}
+                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 inline-flex items-center self-start mt-auto font-medium"
+                          >
+                            阅读全文
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                          </Link>
+                        </div>
+                      </article>
+                    ))}
                   </div>
-                  
-                  <div className="p-6 flex-grow flex flex-col">
-                    <div className="flex items-center justify-between mb-3">
-                      <time className="text-sm text-gray-500 dark:text-gray-400">
-                        {formatDate(post.created_at)}
-                      </time>
-                      {post.category && (
-                        <span className={`text-xs px-2 py-1 rounded-full ${categoryColors[post.category] || categoryColors['其他']}`}>
-                          {post.category}
-                        </span>
-                      )}
-                    </div>
-                    
-                    <p className="text-gray-700 dark:text-gray-300 line-clamp-3 mb-4 flex-grow">
-                      {post.content}
-                    </p>
-                    
-                    <Link
-                      href={`/blog/${post.id}`}
-                      className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 inline-flex items-center self-start mt-auto"
-                    >
-                      阅读更多
-                      <span className="ml-1">→</span>
-                    </Link>
+                </section>
+              )}
+              
+              {/* 其余文章 */}
+              {remainingPosts.length > 0 && (
+                <section>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-8">更多文章</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {remainingPosts.map((post) => (
+                      <article key={post.id} className="group bg-white dark:bg-gray-800 rounded-xl shadow hover:shadow-md transition overflow-hidden flex flex-col h-full">
+                        <div className="p-6 flex-grow flex flex-col">
+                          <div className="flex items-center justify-between mb-3">
+                            <time className="text-sm text-gray-500 dark:text-gray-400">
+                              {formatDate(post.created_at)}
+                            </time>
+                            {post.category && (
+                              <span className={`text-xs px-2 py-1 rounded-full ${categoryColors[post.category] || categoryColors['其他']}`}>
+                                {post.category}
+                              </span>
+                            )}
+                          </div>
+                          
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            {post.title}
+                          </h3>
+                          
+                          <p className="text-gray-700 dark:text-gray-300 line-clamp-3 mb-4 flex-grow">
+                            {post.content}
+                          </p>
+                          
+                          <Link
+                            href={`/blog/${post.id}`}
+                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 inline-flex items-center self-start mt-auto"
+                          >
+                            阅读全文
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                          </Link>
+                        </div>
+                      </article>
+                    ))}
                   </div>
-                </article>
-              ))}
-            </div>
+                </section>
+              )}
+            </>
           )}
         </div>
       )}
 
-      <div className="text-center text-gray-500 dark:text-gray-400 mt-8">
-        <p className="text-sm">
+      {/* 刷新按钮和最后更新时间 */}
+      <div className="mt-12 flex flex-col sm:flex-row items-center justify-between text-gray-500 dark:text-gray-400">
+        <p className="text-sm order-2 sm:order-1">
           最后更新: {lastUpdated.toLocaleString('zh-CN', { 
             year: 'numeric', 
             month: '2-digit', 
@@ -399,6 +485,16 @@ export default function Home() {
             minute: '2-digit'
           })}
         </p>
+        
+        <button
+          onClick={fetchPosts}
+          className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-800/30 transition-colors mb-4 sm:mb-0 order-1 sm:order-2"
+        >
+          <span>刷新文章</span>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
       </div>
     </div>
   );

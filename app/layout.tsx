@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import Link from "next/link";
+import { ThemeProvider } from "@/components/theme-provider";
+import { ModeToggle } from "@/components/mode-toggle";
+import { NavMenu } from "@/components/nav-menu";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -8,8 +12,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Jaxson Wang | 编程与技术分享",
-  description: "我是Jaxson Wang,一个热爱编程的前端开发者，欢迎来到我的博客。",
+  title: "Jaxson Wang | 创新与技术分享",
+  description: "欢迎来到Jaxson Wang，一个充满创意的前端开发者，欢迎来到我的博客。",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
@@ -18,45 +25,44 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased min-h-screen bg-gray-50 dark:bg-gray-900 dark:text-gray-100 flex flex-col`}>
-        {/* 导航栏 */}
-        <nav className="bg-blue-600 text-white p-4 flex justify-between items-center">
-          <div className="text-xl font-bold">Jaxson Wang | 编程与技术分享</div>
-          <ul className="flex space-x-4">
-            <li>
-              <a href="/" className="hover:underline">
-                首页
-              </a>
-            </li>
-            <li>
-              <a href="/blog" className="hover:underline">
-                博客
-              </a>
-            </li>
-            <li>
-              <a href="/about" className="hover:underline">
-                关于
-              </a>
-            </li>
-            <li>
-              <a href="/contact" className="hover:underline">
-                联系
-              </a>
-            </li>
-          </ul>
-        </nav>
-        <main className="container mx-auto p-4 flex-grow">{children}</main>
-        
-        {/* 页脚 */}
-        <footer className="bg-gray-100 dark:bg-gray-800 py-6 mt-8">
-          <div className="container mx-auto px-4">
-            <div className="text-center text-gray-600 dark:text-gray-400">
-              <p>&copy; {new Date().getFullYear()} Jaxson Wang. 保留所有权利。</p>
-              <p className="text-sm mt-2">使用 Next.js 和 Flask 构建</p>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {/* 导航栏 */}
+          <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <NavMenu />
+          </header>
+          
+          <main className="flex-1">{children}</main>
+          
+          {/* 页脚 */}
+          <footer className="border-t py-6 md:py-0">
+            <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
+              <div className="md:flex-1"></div>
+              <p className="text-center text-sm leading-loose text-muted-foreground md:text-center">
+                &copy; {new Date().getFullYear()} Jaxson Wang. 保留所有权利。
+              </p>
+              <div className="flex items-center gap-4 md:flex-1 md:justify-end">
+                <Link href="/admin" className="text-sm text-muted-foreground hover:underline">
+                  管理
+                </Link>
+                <a
+                  href="https://github.com/jaxsonw"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm text-muted-foreground hover:underline"
+                >
+                  GitHub
+                </a>
+              </div>
             </div>
-          </div>
-        </footer>
+          </footer>
+        </ThemeProvider>
       </body>
     </html>
   );
